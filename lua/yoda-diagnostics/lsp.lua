@@ -4,20 +4,24 @@
 local M = {}
 
 --- Check LSP server status
+--- @param opts table|nil Options {silent = boolean}
 --- @return boolean True if any LSP clients are active
-function M.check_status()
+function M.check_status(opts)
+  opts = opts or {}
   local clients = vim.lsp.get_active_clients()
 
-  if #clients == 0 then
-    vim.notify("❌ No LSP clients are currently active", vim.log.levels.WARN)
-    return false
-  else
-    vim.notify("✅ Active LSP clients:", vim.log.levels.INFO)
-    for _, client in ipairs(clients) do
-      vim.notify("  - " .. client.name, vim.log.levels.INFO)
+  if not opts.silent then
+    if #clients == 0 then
+      vim.notify("❌ No LSP clients are currently active", vim.log.levels.WARN)
+    else
+      vim.notify("✅ Active LSP clients:", vim.log.levels.INFO)
+      for _, client in ipairs(clients) do
+        vim.notify("  - " .. client.name, vim.log.levels.INFO)
+      end
     end
-    return true
   end
+
+  return #clients > 0
 end
 
 --- Get active LSP clients

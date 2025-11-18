@@ -113,6 +113,36 @@ describe("diagnostics.lsp", function()
       assert.is_true(notified)
     end)
 
+    it("returns true when clients active with silent option", function()
+      vim.lsp.get_active_clients = function()
+        return { { name = "lua_ls" } }
+      end
+
+      local notify_called = false
+      vim.notify = function()
+        notify_called = true
+      end
+
+      local status = lsp.check_status({ silent = true })
+      assert.is_true(status)
+      assert.is_false(notify_called)
+    end)
+
+    it("returns false when no clients with silent option", function()
+      vim.lsp.get_active_clients = function()
+        return {}
+      end
+
+      local notify_called = false
+      vim.notify = function()
+        notify_called = true
+      end
+
+      local status = lsp.check_status({ silent = true })
+      assert.is_false(status)
+      assert.is_false(notify_called)
+    end)
+
     it("notifies with WARN level when no clients", function()
       vim.lsp.get_active_clients = function()
         return {}
@@ -156,13 +186,50 @@ describe("diagnostics.lsp", function()
       end
 
       lsp.check_status()
-      -- Should have header + 3 client names
       assert.is_true(#notified >= 4)
 
       local all_msgs = table.concat(notified, " ")
       assert.matches("lua_ls", all_msgs)
       assert.matches("gopls", all_msgs)
       assert.matches("tsserver", all_msgs)
+    end)
+  end)
+
+  describe("is_client_active()", function()
+    it("returns true when client is active", function()
+      vim.lsp.get_active_clients = function()
+        return {
+          { name = "lua_ls" },
+          { name = "gopls" },
+        }
+      end
+
+      assert.is_true(lsp.is_client_active("lua_ls"))
+      assert.is_true(lsp.is_client_active("gopls"))
+    end)
+
+    it("returns false when client is not active", function()
+      vim.lsp.get_active_clients = function()
+        return {
+          { name = "lua_ls" },
+        }
+      end
+
+      assert.is_false(lsp.is_client_active("gopls"))
+    end)
+
+    it("returns false when no clients active", function()
+      vim.lsp.get_active_clients = function()
+        return {}
+      end
+
+      assert.is_false(lsp.is_client_active("lua_ls"))
+    end)
+  end)
+
+  describe("get_name()", function()
+    it("returns LSP as diagnostic name", function()
+      assert.equals("LSP", lsp.get_name())
     end)
   end)
 end)
