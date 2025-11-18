@@ -87,10 +87,7 @@ function M.run_all()
   local results = composite:run_all()
   local stats = composite:get_aggregate_status()
 
-  vim.notify(
-    string.format("Diagnostics: %d/%d passed (%.0f%%)", stats.passed, stats.total, stats.pass_rate * 100),
-    vim.log.levels.INFO
-  )
+  vim.notify(string.format("Diagnostics: %d/%d passed (%.0f%%)", stats.passed, stats.total, stats.pass_rate * 100), vim.log.levels.INFO)
 
   return results, stats
 end
